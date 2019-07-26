@@ -40,7 +40,7 @@ def create_stack():
         (str): The identifier of the stack.
     """
 
-    with open(os.path.join(os.getcwd(), 'sparkify-stack.json'), 'r') as f:
+    with open(os.path.join(os.getcwd(), 'sparkify_stack.json'), 'r') as f:
         content = f.read()
 
     response = cloudformation.create_stack(
