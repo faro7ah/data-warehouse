@@ -15,20 +15,38 @@ cloudformation = boto3.client(
 # The delay between stack status checks.
 delay = 30
 
+# A reference to the builtin function 'print()'.
+builtin_print = print
 
-def get_stack_status():
+
+def print(text):
 
     """
-    Checks the status of the Sparkify stack.
+    Prints a timestamp next to the the given text.
+
+    Args:
+        text (str): The text to print.
+    """
+
+    return builtin_print('{} | {}'.format(
+        time.strftime('%H:%M:%S', time.gmtime()),
+        text
+    ))
+
+
+def get_stack_info():
+
+    """
+    Gets the description of the Sparkify stack.
 
     Returns:
-        (str): The status of the stack.
+        (dict): The description of the stack.
     """
 
     response = cloudformation.describe_stacks(
         StackName=config.CLOUDFORMATION_STACK_NAME
     )
-    return response['Stacks'][0]['StackStatus']
+    return response['Stacks'][0]
 
 
 def create_stack():
@@ -43,7 +61,7 @@ def create_stack():
     with open(os.path.join(os.getcwd(), 'sparkify_stack.json'), 'r') as f:
         content = f.read()
 
-    response = cloudformation.create_stack(
+    cloudformation.create_stack(
         StackName=config.CLOUDFORMATION_STACK_NAME,
         TemplateBody=content,
         Capabilities=['CAPABILITY_NAMED_IAM'],
@@ -87,8 +105,6 @@ def create_stack():
         ]
     )
 
-    return response['StackId']
-
 
 def create_sparkify_stack():
 
@@ -97,25 +113,34 @@ def create_sparkify_stack():
     resources to be also created and ready to use.
     """
 
-    def info(text):
-        return print('{} | {}'.format(
-            time.strftime('%H:%M:%S.%f', time.gmtime()),
-            text
-        ))
+    # Creates the stack.
+    print('Creating the stack. This may take awhile, please be patient.')
+    create_stack()
 
-    info('Creating the stack...')
-    stack_id = create_stack()
-    info('Stack identifier: {}'.format(stack_id))
-
-    info('Provisioning the resources...')
-    info('This process may take awhile, please be patient')
+    # Until the resources are provisioned.
     while True:
-        status = get_stack_status()
-        info('Current status: {}'.format(status))
-        if status == 'CREATE_COMPLETE':
-            info('Resources created :-)')
+
+        # Gets the info corresponding the stack.
+        description = get_stack_info()
+        print('Current status: {}'.format(description['StackStatus']))
+
+        # If the resources are provisioned.
+        if description['StackStatus'] == 'CREATE_COMPLETE':
+
+            # Gets the cluster endpoint from the output...
+            endpoint = None
+            for output in description['Outputs']:
+                if output['OutputKey'] == 'SparkifyClusterEndpoint':
+                    endpoint = output['OutputValue']
+                    break
+
+            # ...and prints it.
+            print('Cluster endpoint: {}'.format(endpoint))
+            print('Resources created :-)')
             break
-        info('Asking again in {} seconds'.format(delay))
+
+        # Waits a few seconds until try again.
+        print('Asking again in {} seconds'.format(delay))
         time.sleep(delay)
 
 

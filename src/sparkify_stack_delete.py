@@ -14,20 +14,38 @@ cloudformation = boto3.client(
 # The delay between stack status checks.
 delay = 30
 
+# A reference to the builtin function 'print()'.
+builtin_print = print
 
-def get_stack_status():
+
+def print(text):
 
     """
-    Checks the status of the Sparkify stack.
+    Prints a timestamp next to the the given text.
+
+    Args:
+        text (str): The text to print.
+    """
+
+    return builtin_print('{} | {}'.format(
+        time.strftime('%H:%M:%S', time.gmtime()),
+        text
+    ))
+
+
+def get_stack_info():
+
+    """
+    Gets the description of the Sparkify stack.
 
     Returns:
-        (str): The status of the stack.
+        (dict): The description of the stack.
     """
 
     response = cloudformation.describe_stacks(
         StackName=config.CLOUDFORMATION_STACK_NAME
     )
-    return response['Stacks'][0]['StackStatus']
+    return response['Stacks'][0]
 
 
 def delete_stack():
@@ -48,24 +66,24 @@ def delete_sparkify_stack():
     the defined resources to be also removed.
     """
 
-    def info(text):
-        return print('{} | {}'.format(
-            time.strftime('%H:%M:%S.%f', time.gmtime()),
-            text
-        ))
+    # Deletes the stack.
+    print('Deleting the stack. This may take awhile, please be patient.')
+    delete_stack()
 
-    info('Deleting the stack...')
-    # delete_stack()
-
-    info('Deleting the resources...')
-    info('This process may take awhile, please be patient')
+    # Until the resources are removed.
     while True:
-        status = get_stack_status()
-        info('Current status: {}'.format(status))
-        if status == 'DELETE_COMPLETE':
-            info('Resources deleted :-)')
+
+        # Gets the info corresponding the stack.
+        description = get_stack_info()
+        print('Current status: {}'.format(description['StackStatus']))
+
+        # If the resources are removed.
+        if description['StackStatus'] == 'DELETE_COMPLETE':
+            print('Resources deleted :-)')
             break
-        info('Asking again in {} seconds'.format(delay))
+
+        # Waits a few seconds until try again.
+        print('Asking again in {} seconds'.format(delay))
         time.sleep(delay)
 
 
