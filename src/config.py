@@ -32,6 +32,7 @@ REDSHIFT_ENDPOINT_ADDRESS = _config['REDSHIFT']['ENDPOINT_ADDRESS']
 # ------------- #
 
 IAM_ROLE_NAME = _config['IAM']['ROLE_NAME']
+IAM_ROLE_ARN = _config['IAM']['ROLE_ARN']
 
 # ------------ #
 # S3 constants #

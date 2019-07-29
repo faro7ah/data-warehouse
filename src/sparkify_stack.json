@@ -92,6 +92,15 @@
         }
     },
     "Outputs": {
+        "SparkifyRoleArn": {
+            "Description": "The Sparkify role ARN",
+            "Value": {
+                "Fn::GetAtt": [
+                    "SparkifyRole",
+                    "Arn"
+                ]
+            }
+        },
         "SparkifyClusterEndpoint": {
             "Description": "The Sparkify cluster endpoint",
             "Value": {

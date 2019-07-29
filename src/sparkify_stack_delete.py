@@ -1,4 +1,5 @@
 import boto3
+import botocore
 import config
 import time
 
@@ -73,18 +74,19 @@ def delete_sparkify_stack():
     # Until the resources are removed.
     while True:
 
-        # Gets the info corresponding the stack.
-        description = get_stack_info()
-        print('Current status: {}'.format(description['StackStatus']))
-
-        # If the resources are removed.
-        if description['StackStatus'] == 'DELETE_COMPLETE':
+        try:
+            # Gets the info corresponding the stack.
+            description = get_stack_info()
+        except botocore.exceptions.ClientError:
+            # Boto raises a ClientError if the stack does not exists. This
+            # means that the resources have been properly removed.
             print('Resources deleted :-)')
             break
-
-        # Waits a few seconds until try again.
-        print('Asking again in {} seconds'.format(delay))
-        time.sleep(delay)
+        else:
+            # Waits a few seconds until try again.
+            print('Current status: {}'.format(description['StackStatus']))
+            print('Asking again in {} seconds'.format(delay))
+            time.sleep(delay)
 
 
 if __name__ == '__main__':

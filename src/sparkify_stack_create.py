@@ -34,6 +34,23 @@ def print(text):
     ))
 
 
+def get_output_value(description, key):
+
+    """
+    Get an output value of a given stack description.
+
+    Args:
+        description (dict): The stack description object.
+        key (str): The key of the output.
+
+    Returns:
+        (str): The value of the output.
+    """
+
+    outputs = [o for o in description['Outputs'] if o['OutputKey'] == key]
+    return None if len(outputs) != 1 else outputs[0]['OutputValue']
+
+
 def get_stack_info():
 
     """
@@ -127,15 +144,13 @@ def create_sparkify_stack():
         # If the resources are provisioned.
         if description['StackStatus'] == 'CREATE_COMPLETE':
 
-            # Gets the cluster endpoint from the output...
-            endpoint = None
-            for output in description['Outputs']:
-                if output['OutputKey'] == 'SparkifyClusterEndpoint':
-                    endpoint = output['OutputValue']
-                    break
-
-            # ...and prints it.
-            print('Cluster endpoint: {}'.format(endpoint))
+            # Prints the role ARN and the cluster endpoint.
+            print('Role ARN: {}'.format(
+                get_output_value(description, 'SparkifyRoleArn')
+            ))
+            print('Cluster endpoint: {}'.format(
+                get_output_value(description, 'SparkifyClusterEndpoint')
+            ))
             print('Resources created :-)')
             break
 
