@@ -21,6 +21,31 @@ As their data engineer, you are tasked with building an ETL pipeline that extrac
   - [Initializing the database](#initializing-the-database)
   - [Running the ETL](#running-the-etl)
 - [Analyzing the data](#analyzing-the-data)
+- [Cleaning the environment](#cleaning-the-environment)
+
+---
+
+## Structure<a name="structure"></a>
+
+This tree shows the repository structure. Only the project's main files are described.
+
+```
+.
+├── images
+├── src
+│   ├── config.py                  # Application config manager
+│   ├── create_tables.py           # Database initialization script
+│   ├── etl.py                     # ETL pipeline script
+│   ├── sparkify_stack_create.py   # Script for the Sparkify stack creation
+│   ├── sparkify_stack_delete.py   # Script for the Sparkify stack deletion
+│   ├── sparkify_stack.json        # CloudFormation template of the Sparkify stack
+│   ├── sparkify.cfg               # Application config file
+│   ├── sql_queries.py             # Database queries
+├── .editorconfig
+├── .gitignore
+├── README.md
+└── requirements.txt
+```
 
 ---
 
@@ -36,7 +61,7 @@ In addition to the Udacity nanodegree, I found this links about how to model dat
 
 <img src="images/model-staging.png" width="275" alt="Staging model">
 
-**Staging table `staging_events`**
+**staging_events**
 
 This table has the field `artist` as the distribution key, and the field `song` as the sort key. Both fields will be used later to JOIN other tables to prepare the dimensions and fact data.
 
@@ -62,7 +87,7 @@ This table has the field `artist` as the distribution key, and the field `song` 
 | userAgent     | VARCHAR    |    |         |         |    |
 | userId        | INTEGER    |    |         |         |    |
 
-**Staging table `staging_songs`**
+**staging_songs**
 
 The same applies to this table: the field `artist_id` is used as the distribution key, and the field `song_id` as the sort key. The distribution style is KEY.
 
@@ -83,7 +108,7 @@ The same applies to this table: the field `artist_id` is used as the distributio
 
 <img src="images/model-star.png" width="417" alt="Star model">
 
-**Dimension table `time`**
+**time**
 
 This is a small table that can be replicated in every slice, so I set the distribution style as ALL.
 
@@ -97,7 +122,7 @@ This is a small table that can be replicated in every slice, so I set the distri
 | year       | SMALLINT  |    |         |         |    |
 | weekday    | SMALLINT  |    |         |         |    |
 
-**Dimension table `users`**
+**users**
 
 This table doesn't participate in any JOIN, so it has no distribution or sort keys. It's tiny, so the distribution style can be ALL.
 
@@ -109,7 +134,7 @@ This table doesn't participate in any JOIN, so it has no distribution or sort ke
 | gender     | VARCHAR |    |         |         |    |
 | level      | VARCHAR |    |         |         |    |
 
-**Dimension table `artists`**
+**artists**
 
 The size of this table is reasonably small, so I decided to set its distribution style as ALL and make it available in every single slice to ease the JOIN clauses.
 
@@ -121,7 +146,7 @@ The size of this table is reasonably small, so I decided to set its distribution
 | latitude  | FLOAT         |    |         |         |    |
 | longitude | FLOAT         |    |         |         |    |
 
-**Dimension table `songs`**
+**songs**
 
 Artists and songs are related to each other, so their identifiers are always good candidates to be involved in the data distribution. I set the `artist_id` as both the distribution and sort keys. Due to this, the distribution style is KEY.
 
@@ -133,7 +158,7 @@ Artists and songs are related to each other, so their identifiers are always goo
 | year      | SMALLINT      |    |         |         |                    |
 | duration  | FLOAT         |    |         |         |                    |
 
-**Fact table `songplays`**
+**songplays**
 
 As I said, I see the relation artist > songs important enough to choose their identifiers to participate in the data distribution: the field `artist_id` is the distribution key, while the field `song_id` is the sort key. Therefore, the distribution style is KEY.
 
@@ -148,28 +173,6 @@ As I said, I see the relation artist > songs important enough to choose their id
 | session_id  | INTEGER   |    |         |         |                    |
 | location    | VARCHAR   |    |         |         |                    |
 | user_agent  | VARCHAR   |    |         |         |                    |
-
-## Structure<a name="structure"></a>
-
-This tree shows the repository structure. Only the project's main files are described.
-
-```
-.
-├── images
-├── src
-│   ├── config.py                  # Application config manager
-│   ├── create_tables.py           # Database initialization script
-│   ├── etl.py                     # ETL pipeline script
-│   ├── sparkify_stack_create.py   # Script for the Sparkify stack creation
-│   ├── sparkify_stack_delete.py   # Script for the Sparkify stack deletion
-│   ├── sparkify_stack.json        # CloudFormation template of the Sparkify stack
-│   ├── sparkify.cfg               # Application config file
-│   ├── sql_queries.py             # Database queries
-├── .editorconfig
-├── .gitignore
-├── README.md
-└── requirements.txt
-```
 
 ---
 
@@ -261,7 +264,7 @@ It will be ready in a minute.
 
 ## How to use<a name="how-to-use"></a>
 
-TBD
+Here are listed the steps to follow in order to make the ETL pipeline work.
 
 ### Creating the Sparkify stack<a name="creating-the-sparkify-stack"></a>
 
@@ -303,7 +306,7 @@ python create_tables.py
 
 This step is almost immediate.
 
-### Running the ETL<a name="running-the-etl"></a>
+### Running the ETL<a name="running-the-etl"></a>
 
 This step will test your patience. It takes ~1 hour, and performs the actions described below:
 
@@ -370,3 +373,15 @@ You will get something like this:
 |  8 | John Mayer featuring DJ Logic   |        48 |
 |  9 | Justin Bieber / Jessica Jarrell |        44 |
 | 10 | Evanescence                     |        41 |
+
+---
+
+## Cleaning the environment<a name="cleaning-the-environment"></a>
+
+To remove the Sparkify stack, just run the following command in your Terminal:
+
+```bash
+python sparkify_stack_delete.py
+```
+
+In a few minutes, all the provisioned resources will be removed and will no longer incur cost in your AWS account.
