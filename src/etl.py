@@ -33,6 +33,8 @@ def load_staging_tables():
         conn.set_session(autocommit=True)
         with conn.cursor() as cur:
 
+            print('Importing data. This may take awhile, please be patient.')
+
             # Copies the events from S3 to the 'staging_events' table.
             print('Copying events into the staging table \'staging_events\'')
             cur.execute(sql_queries.staging_events_copy)
@@ -46,23 +48,23 @@ def load_staging_tables():
                 counter += 1
 
             # Inserts the users using the staging tables as source.
-            print('Inserting records in the table \'users\'')
+            print('Populating the table \'users\'')
             cur.execute(sql_queries.users_table_insert)
 
             # Inserts the songs using the staging tables as source.
-            print('Inserting records in the table \'songs\'')
+            print('Populating the table \'songs\'')
             cur.execute(sql_queries.songs_table_insert)
 
             # Inserts the artists using the staging tables as source.
-            print('Inserting records in the table \'artists\'')
+            print('Populating the table \'artists\'')
             cur.execute(sql_queries.artists_table_insert)
 
             # Inserts the timestamps using the staging tables as source.
-            print('Inserting records in the table \'time\'')
+            print('Populating the table \'time\'')
             cur.execute(sql_queries.time_table_insert)
 
             # Inserts the songplays using the staging tables as source.
-            print('Inserting records in the table \'songplays\'')
+            print('Populating the table \'songplays\'')
             cur.execute(sql_queries.songplays_table_insert)
 
 

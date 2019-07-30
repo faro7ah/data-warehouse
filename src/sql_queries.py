@@ -8,25 +8,29 @@ staging_events_table_drop = "DROP TABLE IF EXISTS staging_events;"
 
 staging_events_table_create = """
     CREATE TABLE IF NOT EXISTS staging_events (
-        eventId INTEGER IDENTITY(0, 1) PRIMARY KEY,
-        artist VARCHAR DISTKEY,
-        auth VARCHAR,
-        firstName VARCHAR,
-        gender VARCHAR(1),
+              eventId INTEGER
+                      IDENTITY(0, 1)
+                      PRIMARY KEY,
+               artist VARCHAR
+                      DISTKEY,
+                 auth VARCHAR,
+            firstName VARCHAR,
+               gender VARCHAR(1),
         itemInSession INTEGER,
-        lastName VARCHAR,
-        length FLOAT,
-        level VARCHAR,
-        location VARCHAR,
-        method VARCHAR(7),
-        page VARCHAR,
-        registration BIGINT,
-        sessionId INTEGER,
-        song VARCHAR SORTKEY,
-        status SMALLINT,
-        ts TIMESTAMP,
-        userAgent VARCHAR,
-        userId INTEGER
+             lastName VARCHAR,
+               length FLOAT,
+                level VARCHAR,
+             location VARCHAR,
+               method VARCHAR(7),
+                 page VARCHAR,
+         registration BIGINT,
+            sessionId INTEGER,
+                 song VARCHAR
+                      SORTKEY,
+               status SMALLINT,
+                   ts TIMESTAMP,
+            userAgent VARCHAR,
+               userId INTEGER
     )
     DISTSTYLE KEY;
 """
@@ -56,16 +60,19 @@ staging_songs_table_drop = "DROP TABLE IF EXISTS staging_songs;"
 
 staging_songs_table_create = """
     CREATE TABLE IF NOT EXISTS staging_songs (
-        song_id VARCHAR PRIMARY KEY,
-        num_songs INTEGER,
-        title VARCHAR(1024) SORTKEY,
-        artist_name VARCHAR(1024) DISTKEY,
-        artist_latitude FLOAT,
-        year SMALLINT,
-        duration FLOAT,
-        artist_id VARCHAR,
+                 song_id VARCHAR
+                         PRIMARY KEY
+                         SORTKEY,
+               num_songs INTEGER,
+                   title VARCHAR(1024),
+             artist_name VARCHAR(1024),
+         artist_latitude FLOAT,
+                    year SMALLINT,
+                duration FLOAT,
+               artist_id VARCHAR
+                         DISTKEY,
         artist_longitude FLOAT,
-        artist_location VARCHAR(1024)
+         artist_location VARCHAR(1024)
     )
     DISTSTYLE KEY;
 """
@@ -106,15 +113,31 @@ songplays_table_drop = "DROP TABLE IF EXISTS songplays;"
 
 songplays_table_create = """
     CREATE TABLE IF NOT EXISTS songplays (
-        songplay_id INTEGER IDENTITY(0, 1) PRIMARY KEY,
-        start_time TIMESTAMP NOT NULL,
-        user_id INTEGER NOT NULL,
-        level VARCHAR NOT NULL,
-        song_id VARCHAR NOT NULL DISTKEY,
-        artist_id VARCHAR NOT NULL SORTKEY,
-        session_id INTEGER NOT NULL,
-        location VARCHAR NOT NULL,
-        user_agent VARCHAR NOT NULL
+        songplay_id INTEGER
+                    IDENTITY(0, 1)
+                    PRIMARY KEY,
+         start_time TIMESTAMP
+                    NOT NULL
+                    REFERENCES time(start_time),
+            user_id INTEGER
+                    NOT NULL
+                    REFERENCES users(user_id),
+              level VARCHAR
+                    NOT NULL,
+            song_id VARCHAR
+                    NOT NULL
+                    REFERENCES songs(song_id)
+                    SORTKEY,
+          artist_id VARCHAR
+                    NOT NULL
+                    REFERENCES artists(artist_id)
+                    DISTKEY,
+         session_id INTEGER
+                    NOT NULL,
+           location VARCHAR
+                    NOT NULL,
+         user_agent VARCHAR
+                    NOT NULL
     )
     DISTSTYLE KEY;
 """
@@ -152,13 +175,18 @@ users_table_drop = "DROP TABLE IF EXISTS users;"
 
 users_table_create = """
     CREATE TABLE IF NOT EXISTS users (
-        user_id INTEGER PRIMARY KEY,
-        first_name VARCHAR NOT NULL,
-        last_name VARCHAR NOT NULL,
-        gender VARCHAR(1) NOT NULL,
-        level VARCHAR NOT NULL
+           user_id INTEGER
+                   PRIMARY KEY,
+        first_name VARCHAR
+                   NOT NULL,
+         last_name VARCHAR
+                   NOT NULL,
+            gender VARCHAR(1)
+                   NOT NULL,
+             level VARCHAR
+                   NOT NULL
     )
-    DISTSTYLE EVEN;
+    DISTSTYLE ALL;
 """
 
 users_table_insert = """
@@ -173,7 +201,8 @@ users_table_insert = """
                 lastName AS last_name,
                 gender,
                 level
-           FROM staging_events;
+           FROM staging_events
+          WHERE user_id IS NOT NULL;
 """
 
 # ------------- #
@@ -184,13 +213,19 @@ songs_table_drop = "DROP TABLE IF EXISTS songs;"
 
 songs_table_create = """
     CREATE TABLE IF NOT EXISTS songs (
-        song_id VARCHAR PRIMARY KEY,
-        title VARCHAR(1024) NOT NULL,
-        artist_id VARCHAR NOT NULL,
-        year SMALLINT,
-        duration FLOAT
+          song_id VARCHAR
+                  PRIMARY KEY,
+            title VARCHAR(1024)
+                  NOT NULL,
+        artist_id VARCHAR
+                  NOT NULL
+                  REFERENCES artists(artist_id)
+                  DISTKEY
+                  SORTKEY,
+             year SMALLINT,
+         duration FLOAT
     )
-    DISTSTYLE EVEN;
+    DISTSTYLE KEY;
 """
 
 songs_table_insert = """
@@ -205,7 +240,8 @@ songs_table_insert = """
                 artist_id,
                 year,
                 duration
-           FROM staging_songs;
+           FROM staging_songs
+          WHERE song_id IS NOT NULL;
 """
 
 # --------------- #
@@ -216,13 +252,15 @@ artists_table_drop = "DROP TABLE IF EXISTS artists;"
 
 artists_table_create = """
     CREATE TABLE IF NOT EXISTS artists (
-        artist_id VARCHAR PRIMARY KEY,
-        name VARCHAR(1024) NOT NULL,
-        location VARCHAR(1024),
-        latitude FLOAT,
+        artist_id VARCHAR
+                  PRIMARY KEY,
+             name VARCHAR(1024)
+                  NOT NULL,
+         location VARCHAR(1024),
+         latitude FLOAT,
         longitude FLOAT
     )
-    DISTSTYLE EVEN;
+    DISTSTYLE ALL;
 """
 
 artists_table_insert = """
@@ -237,7 +275,8 @@ artists_table_insert = """
                 artist_location AS location,
                 artist_latitude AS latitude,
                 artist_longitude AS longitude
-           FROM staging_songs;
+           FROM staging_songs
+          WHERE artist_id IS NOT NULL;
 """
 
 # ------------- #
@@ -248,15 +287,22 @@ time_table_drop = "DROP TABLE IF EXISTS time;"
 
 time_table_create = """
     CREATE TABLE IF NOT EXISTS time (
-        start_time TIMESTAMP PRIMARY KEY,
-        hour INTEGER NOT NULL,
-        day INTEGER NOT NULL,
-        week INTEGER NOT NULL,
-        month INTEGER NOT NULL,
-        year INTEGER NOT NULL,
-        weekday INTEGER NOT NULL
+        start_time TIMESTAMP
+                   PRIMARY KEY,
+              hour SMALLINT
+                   NOT NULL,
+               day SMALLINT
+                   NOT NULL,
+              week SMALLINT
+                   NOT NULL,
+             month SMALLINT
+                   NOT NULL,
+              year SMALLINT
+                   NOT NULL,
+           weekday SMALLINT
+                   NOT NULL
     )
-    DISTSTYLE EVEN;
+    DISTSTYLE ALL;
 """
 
 time_table_insert = """
@@ -275,5 +321,6 @@ time_table_insert = """
                 DATE_PART(MONTH, ts) AS month,
                 DATE_PART(YEAR, ts) AS year,
                 DATE_PART(WEEKDAY, ts) AS weekday
-           FROM staging_events;
+           FROM staging_events
+          WHERE ts IS NOT NULL;;
 """
